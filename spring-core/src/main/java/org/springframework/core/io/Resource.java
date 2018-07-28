@@ -16,6 +16,8 @@
 
 package org.springframework.core.io;
 
+import org.springframework.lang.Nullable;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,8 +25,6 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-
-import org.springframework.lang.Nullable;
 
 /**
  * Interface for a resource descriptor that abstracts from the actual
@@ -49,6 +49,7 @@ import org.springframework.lang.Nullable;
  * @see ByteArrayResource
  * @see InputStreamResource
  */
+// 这个类实现了对各种底层资源的访问形式，比如是否存在，是否可读，比 InputStreamSource 更近一步，更加接近真实的文件。
 public interface Resource extends InputStreamSource {
 
 	/**
@@ -147,6 +148,7 @@ public interface Resource extends InputStreamSource {
 	 * @throws IOException if the resource cannot be resolved
 	 * (in the file system or as some other known physical resource type)
 	 */
+	// 使用的是 long 而不是 Long，这样就杜绝了 null 的危害
 	long lastModified() throws IOException;
 
 	/**

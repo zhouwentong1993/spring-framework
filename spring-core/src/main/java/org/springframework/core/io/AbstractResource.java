@@ -16,6 +16,10 @@
 
 package org.springframework.core.io;
 
+import org.springframework.core.NestedIOException;
+import org.springframework.lang.Nullable;
+import org.springframework.util.ResourceUtils;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -25,10 +29,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-
-import org.springframework.core.NestedIOException;
-import org.springframework.lang.Nullable;
-import org.springframework.util.ResourceUtils;
 
 /**
  * Convenience base class for {@link Resource} implementations,
@@ -41,6 +41,7 @@ import org.springframework.util.ResourceUtils;
  * @author Juergen Hoeller
  * @since 28.12.2003
  */
+// 为 Resource 提供了默认的实现
 public abstract class AbstractResource implements Resource {
 
 	/**
@@ -105,6 +106,7 @@ public abstract class AbstractResource implements Resource {
 	 * by {@link #getURL()}.
 	 */
 	@Override
+	// 都是将实际的实现委托给了子类，标准的策略模式
 	public URI getURI() throws IOException {
 		URL url = getURL();
 		try {

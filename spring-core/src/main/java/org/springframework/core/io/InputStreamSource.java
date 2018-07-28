@@ -37,6 +37,8 @@ import java.io.InputStream;
  * @see Resource
  * @see InputStreamResource
  * @see ByteArrayResource
+ * 这个类是用于对 Spring 要使用到的资源的抽象类，抽象成相对独立的 InputStream，这样可以兼容各个文件来源。
+ * 比如 HTTP、FILE、JAR 之类的，最终都会转换成 InputStream。
  */
 public interface InputStreamSource {
 
