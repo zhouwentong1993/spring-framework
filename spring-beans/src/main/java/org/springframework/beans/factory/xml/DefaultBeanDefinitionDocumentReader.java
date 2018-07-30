@@ -148,6 +148,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 
 		// 如果想对处理 xml 之前和之后做点儿什么事情，就重写这两个方法就行。
 		preProcessXml(root);
+		// 解析 BeanDefinition
 		parseBeanDefinitions(root, this.delegate);
 		postProcessXml(root);
 
@@ -167,6 +168,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 	 * "import", "alias", "bean".
 	 * @param root the DOM root element of the document
 	 */
+//	todo 看到这里了
 	protected void parseBeanDefinitions(Element root, BeanDefinitionParserDelegate delegate) {
 		if (delegate.isDefaultNamespace(root)) {
 			NodeList nl = root.getChildNodes();
