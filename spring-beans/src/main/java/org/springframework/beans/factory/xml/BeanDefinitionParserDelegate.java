@@ -238,6 +238,7 @@ public class BeanDefinitionParserDelegate {
 	 * beans-element basis. Duplicate bean ids/names may not exist within the
 	 * same level of beans element nesting, but may be duplicated across levels.
 	 */
+	// 保存所有的 BeanName，在解析过程中，这个是线程安全的
 	private final Set<String> usedNames = new HashSet<>();
 
 
@@ -411,6 +412,7 @@ public class BeanDefinitionParserDelegate {
 	 * {@link org.springframework.beans.factory.parsing.ProblemReporter}.
 	 */
 	@Nullable
+	// 将 xml 属性解析成对应的 BeanDefinitionHolder
 	public BeanDefinitionHolder parseBeanDefinitionElement(Element ele, @Nullable BeanDefinition containingBean) {
 		String id = ele.getAttribute(ID_ATTRIBUTE);
 		String nameAttr = ele.getAttribute(NAME_ATTRIBUTE);
@@ -422,14 +424,22 @@ public class BeanDefinitionParserDelegate {
 		}
 
 		String beanName = id;
+		//	<bean class="org.springframework.tests.sample.beans.TestBean" name="aliasWithoutId1,aliasWithoutId2,aliasWithoutId3">
+		//		<property name="name"><value>aliased</value></property>
+		//	</bean>
+
+		// 当 id 没有指定的时候，默认使用 aliases 的第一个当 beanName，也就是 id
+		// 这样做的意义是什么
+		// fixme
 		if (!StringUtils.hasText(beanName) && !aliases.isEmpty()) {
 			beanName = aliases.remove(0);
-			if (logger.isDebugEnabled()) {
-				logger.debug("No XML 'id' specified - using '" + beanName +
+//			if (logger.isInfoEnabled()) {
+				logger.info("No XML 'id' specified - using '" + beanName +
 						"' as bean name and " + aliases + " as aliases");
-			}
+//			}
 		}
 
+		// 解析 bean 的时候，默认传 null
 		if (containingBean == null) {
 			checkNameUniqueness(beanName, aliases, ele);
 		}
@@ -475,15 +485,19 @@ public class BeanDefinitionParserDelegate {
 	 * Validate that the specified bean name and aliases have not been used already
 	 * within the current level of beans element nesting.
 	 */
+	// Element 一直传递，虽然方便，但是造成耦合严重，即解析代码需要耦合 xml 结构代码，但是听起来也还好
 	protected void checkNameUniqueness(String beanName, List<String> aliases, Element beanElement) {
 		String foundName = null;
+
 
 		if (StringUtils.hasText(beanName) && this.usedNames.contains(beanName)) {
 			foundName = beanName;
 		}
 		if (foundName == null) {
+			// 找到 usedNames 里面第一个匹配的 alias
 			foundName = CollectionUtils.findFirstMatch(this.usedNames, aliases);
 		}
+		// 如果存在重名的 id，就报错
 		if (foundName != null) {
 			error("Bean name '" + foundName + "' is already used in this <beans> element", beanElement);
 		}
@@ -503,6 +517,7 @@ public class BeanDefinitionParserDelegate {
 		this.parseState.push(new BeanEntry(beanName));
 
 		String className = null;
+		// 解析 class 属性
 		if (ele.hasAttribute(CLASS_ATTRIBUTE)) {
 			className = ele.getAttribute(CLASS_ATTRIBUTE).trim();
 		}
@@ -512,6 +527,7 @@ public class BeanDefinitionParserDelegate {
 		}
 
 		try {
+//			todo
 			AbstractBeanDefinition bd = createBeanDefinition(className, parent);
 
 			parseBeanDefinitionAttributes(ele, beanName, containingBean, bd);
@@ -1473,8 +1489,9 @@ public class BeanDefinitionParserDelegate {
 		return desiredName.equals(node.getNodeName()) || desiredName.equals(getLocalName(node));
 	}
 
-	public boolean isDefaultNamespace(@Nullable String namespaceUri) {
-		return (!StringUtils.hasLength(namespaceUri) || BEANS_NAMESPACE_URI.equals(namespaceUri));
+	// todo 如果 namespace 为空，则认为是 spring 默认的 bean，为什么？
+	public static boolean isDefaultNamespace(@Nullable String namespaceUri) {
+		return !StringUtils.hasLength(namespaceUri) || BEANS_NAMESPACE_URI.equals(namespaceUri);
 	}
 
 	public boolean isDefaultNamespace(Node node) {
