@@ -18,6 +18,7 @@ package org.springframework.beans.factory.config;
 
 import org.springframework.beans.BeanMetadataElement;
 import org.springframework.beans.factory.BeanFactoryUtils;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
@@ -62,7 +63,8 @@ public class BeanDefinitionHolder implements BeanMetadataElement {
 	 * @param beanName the name of the bean, as specified for the bean definition
 	 * @param aliases alias names for the bean, or {@code null} if none
 	 */
-	public BeanDefinitionHolder(BeanDefinition beanDefinition, String beanName, @Nullable String[] aliases) {
+	public BeanDefinitionHolder(@NonNull BeanDefinition beanDefinition, @NonNull String beanName, @Nullable String[] aliases) {
+		// 做参数校验
 		Assert.notNull(beanDefinition, "BeanDefinition must not be null");
 		Assert.notNull(beanName, "Bean name must not be null");
 		this.beanDefinition = beanDefinition;

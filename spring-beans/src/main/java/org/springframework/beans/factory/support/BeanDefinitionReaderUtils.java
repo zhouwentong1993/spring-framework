@@ -57,6 +57,8 @@ public abstract class BeanDefinitionReaderUtils {
 	public static AbstractBeanDefinition createBeanDefinition(
 			@Nullable String parentName, @Nullable String className, @Nullable ClassLoader classLoader) throws ClassNotFoundException {
 
+		// 创建一个 BeanDefinition，设置好 parentName 和 BeanClass
+		// BeanClass
 		GenericBeanDefinition bd = new GenericBeanDefinition();
 		bd.setParentName(parentName);
 		if (className != null) {
@@ -100,6 +102,7 @@ public abstract class BeanDefinitionReaderUtils {
 	 * @throws BeanDefinitionStoreException if no unique name can be generated
 	 * for the given bean definition
 	 */
+	// 按照 Spring 的规则为当前的 bean 生成对应的 beanName
 	public static String generateBeanName(
 			BeanDefinition definition, BeanDefinitionRegistry registry, boolean isInnerBean)
 			throws BeanDefinitionStoreException {

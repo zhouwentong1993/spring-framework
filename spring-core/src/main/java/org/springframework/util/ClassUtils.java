@@ -175,6 +175,7 @@ public abstract class ClassUtils {
 	 * @see ClassLoader#getSystemClassLoader()
 	 */
 	@Nullable
+	// 得到默认的 classLoader
 	public static ClassLoader getDefaultClassLoader() {
 		ClassLoader cl = null;
 		try {
@@ -232,16 +233,38 @@ public abstract class ClassUtils {
 	 * @throws LinkageError if the class file could not be loaded
 	 * @see Class#forName(String, boolean, ClassLoader)
 	 */
-// todo 看到解析 beanDefinition 的内部数据了
 	public static Class<?> forName(String name, @Nullable ClassLoader classLoader)
 			throws ClassNotFoundException, LinkageError {
-
 		Assert.notNull(name, "Name must not be null");
 
+		// 首先解析原始类型，int boolean 这些
 		Class<?> clazz = resolvePrimitiveClassName(name);
 		if (clazz == null) {
+//			registerCommonClasses(Boolean[].class, Byte[].class, Character[].class, Double[].class,
+//					Float[].class, Integer[].class, Long[].class, Short[].class);
+//			registerCommonClasses(Number.class, Number[].class, String.class, String[].class,
+//					Class.class, Class[].class, Object.class, Object[].class);
+//			registerCommonClasses(Throwable.class, Exception.class, RuntimeException.class,
+//					Error.class, StackTraceElement.class, StackTraceElement[].class);
+//			registerCommonClasses(Enum.class, Iterable.class, Iterator.class, Enumeration.class,
+//					Collection.class, List.class, Set.class, Map.class, Map.Entry.class, Optional.class);
+//
+//			Class<?>[] javaLanguageInterfaceArray = {Serializable.class, Externalizable.class,
+//					Closeable.class, AutoCloseable.class, Cloneable.class, Comparable.class};
+//			registerCommonClasses(javaLanguageInterfaceArray);
+//			primitiveWrapperTypeMap.put(Boolean.class, boolean.class);
+//			primitiveWrapperTypeMap.put(Byte.class, byte.class);
+//			primitiveWrapperTypeMap.put(Character.class, char.class);
+//			primitiveWrapperTypeMap.put(Double.class, double.class);
+//			primitiveWrapperTypeMap.put(Float.class, float.class);
+//			primitiveWrapperTypeMap.put(Integer.class, int.class);
+//			primitiveWrapperTypeMap.put(Long.class, long.class);
+//			primitiveWrapperTypeMap.put(Short.class, short.class);
+			// 主要是这些
 			clazz = commonClassCache.get(name);
 		}
+
+		// 首先通过 spring 内部定义的 class 对象，穷举的效率较高，这样也能提高效率
 		if (clazz != null) {
 			return clazz;
 		}
@@ -453,12 +476,19 @@ public abstract class ClassUtils {
 		Class<?> result = null;
 		// Most class names will be quite long, considering that they
 		// SHOULD sit in a package, so a length check is worthwhile.
+		// 做了优化，如果长度小于 8，就直接返回了，算是一个优化技巧，但是感觉没有什么必要。
 		if (name != null && name.length() <= 8) {
 			// Could be a primitive - likely.
 			result = primitiveTypeNameMap.get(name);
 		}
 		return result;
 	}
+
+//	public static void main(String[] args) {
+//		Class<?> aClass = resolvePrimitiveClassName("java.lang.String");
+//		System.out.println(resolvePrimitiveClassName(boolean.class.getName()));
+//		System.out.println(aClass);
+//	}
 
 	/**
 	 * Check if the given class represents a primitive wrapper,
