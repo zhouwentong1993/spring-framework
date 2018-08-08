@@ -49,6 +49,7 @@ import java.util.*;
  * @see DefaultBeanDefinitionDocumentReader
  * @since 2.0
  */
+// fixme 有个问题，就是在 BeanDefinition 这个实际解析的类里面，都是依赖着 Element 对象，那么依靠枚举注册的咋办，弄一个 adapter？
 public class BeanDefinitionParserDelegate {
 
 	public static final String BEANS_NAMESPACE_URI = "http://www.springframework.org/schema/beans";
@@ -198,6 +199,7 @@ public class BeanDefinitionParserDelegate {
 
 	private final DocumentDefaultsDefinition defaults = new DocumentDefaultsDefinition();
 
+	// 用了一个 LinkedList 结构，应该是做栈的作用
 	private final ParseState parseState = new ParseState();
 
 	/**
@@ -494,7 +496,6 @@ public class BeanDefinitionParserDelegate {
 		}
 
 		try {
-			// todo 看到这里了！！！！！
 			AbstractBeanDefinition bd = createBeanDefinition(className, parent);
 
 			parseBeanDefinitionAttributes(ele, beanName, containingBean, bd);
@@ -630,16 +631,25 @@ public class BeanDefinitionParserDelegate {
 				parentName, className, this.readerContext.getBeanClassLoader());
 	}
 
+	// 解析 meta 标签
+	/*
+	meta 标签具体是干嘛的，我也忘了
+	<bean id="myTestBean" class="bean.MyTestBean">
+		<meta key = "testStr" value = "aaaaa"/>
+	</bean>
+	 */
 	public void parseMetaElements(Element ele, BeanMetadataAttributeAccessor attributeAccessor) {
 		NodeList nl = ele.getChildNodes();
 		for (int i = 0; i < nl.getLength(); i++) {
 			Node node = nl.item(i);
+			// 如果是 meta 属性
 			if (isCandidateElement(node) && nodeNameEquals(node, META_ELEMENT)) {
 				Element metaElement = (Element) node;
 				String key = metaElement.getAttribute(KEY_ATTRIBUTE);
 				String value = metaElement.getAttribute(VALUE_ATTRIBUTE);
 				BeanMetadataAttribute attribute = new BeanMetadataAttribute(key, value);
 				attribute.setSource(extractSource(metaElement));
+				// 将数据封装在 attributeAccessor 里面
 				attributeAccessor.addMetadataAttribute(attribute);
 			}
 		}
@@ -668,6 +678,7 @@ public class BeanDefinitionParserDelegate {
 	/**
 	 * Parse constructor-arg sub-elements of the given bean element.
 	 */
+	// 解析构造器配置
 	public void parseConstructorArgElements(Element beanEle, BeanDefinition bd) {
 		NodeList nl = beanEle.getChildNodes();
 		for (int i = 0; i < nl.getLength(); i++) {
@@ -707,6 +718,7 @@ public class BeanDefinitionParserDelegate {
 	/**
 	 * Parse lookup-override sub-elements of the given bean element.
 	 */
+	// 和解析 meta 标签是一样的。最后是放在 MethodOverrides 这个对象里面
 	public void parseLookupOverrideSubElements(Element beanEle, MethodOverrides overrides) {
 		NodeList nl = beanEle.getChildNodes();
 		for (int i = 0; i < nl.getLength(); i++) {
@@ -752,12 +764,14 @@ public class BeanDefinitionParserDelegate {
 	/**
 	 * Parse a constructor-arg element.
 	 */
+	// todo 看到这里了！！！！！
 	public void parseConstructorArgElement(Element ele, BeanDefinition bd) {
 		String indexAttr = ele.getAttribute(INDEX_ATTRIBUTE);
 		String typeAttr = ele.getAttribute(TYPE_ATTRIBUTE);
 		String nameAttr = ele.getAttribute(NAME_ATTRIBUTE);
 		if (StringUtils.hasLength(indexAttr)) {
 			try {
+				// 用 int 不错，在确定 integer 的 null 不会带来任何好处时，用 int，尽量使用原生类型。
 				int index = Integer.parseInt(indexAttr);
 				if (index < 0) {
 					error("'index' cannot be lower than 0", ele);
