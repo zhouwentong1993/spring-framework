@@ -141,6 +141,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	private volatile Object beanClass;
 
 	@Nullable
+	// scope 代表 bean 的作用范围
 	private String scope = SCOPE_DEFAULT;
 
 	private boolean abstractFlag = false;
@@ -156,8 +157,10 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 
 	private boolean autowireCandidate = true;
 
+	// 自动装配当有多个 bean 都满足要求时，含有 primary 的优先注入，数据库多个连接池，必须要指定一个 primary。
 	private boolean primary = false;
 
+	// 记录 qualifier，对应着子元素 qualifier
 	private final Map<String, AutowireCandidateQualifier> qualifiers = new LinkedHashMap<>(0);
 
 	@Nullable
@@ -174,6 +177,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	private String factoryMethodName;
 
 	@Nullable
+	// 记录构造函数注入属性
 	private ConstructorArgumentValues constructorArgumentValues;
 
 	@Nullable

@@ -764,10 +764,16 @@ public class BeanDefinitionParserDelegate {
 	/**
 	 * Parse a constructor-arg element.
 	 */
-	// todo 看到这里了！！！！！
+	// Spring 做了很多异常捕获工作，估计是为了更好地展示异常信息，不至于让用户不懂，缺点就是代码复杂度过高，不整洁。
+	/*
+	总共分三步，解析 constructor-arg 的子元素，通过 ConstructorArgumentValues 去封装
+	 */
 	public void parseConstructorArgElement(Element ele, BeanDefinition bd) {
+		// 提取 index 属性
 		String indexAttr = ele.getAttribute(INDEX_ATTRIBUTE);
+		// 提取 type 属性
 		String typeAttr = ele.getAttribute(TYPE_ATTRIBUTE);
+		// 提取 name 属性
 		String nameAttr = ele.getAttribute(NAME_ATTRIBUTE);
 		if (StringUtils.hasLength(indexAttr)) {
 			try {
@@ -777,6 +783,7 @@ public class BeanDefinitionParserDelegate {
 					error("'index' cannot be lower than 0", ele);
 				} else {
 					try {
+						// fixme 不太懂这个， try 里面 push，然后 finally 里面 pop，是有多线程访问的问题吗
 						this.parseState.push(new ConstructorArgumentEntry(index));
 						Object value = parsePropertyValue(ele, bd, null);
 						ConstructorArgumentValues.ValueHolder valueHolder = new ConstructorArgumentValues.ValueHolder(value);
@@ -787,9 +794,11 @@ public class BeanDefinitionParserDelegate {
 							valueHolder.setName(nameAttr);
 						}
 						valueHolder.setSource(extractSource(ele));
+						// 重复相同参数校验
 						if (bd.getConstructorArgumentValues().hasIndexedArgumentValue(index)) {
 							error("Ambiguous constructor-arg entries for index " + index, ele);
 						} else {
+							// 添加到了 genericArgumentValues 里面，两个不一样，一个是 List 结构，一个是 Map 结构
 							bd.getConstructorArgumentValues().addIndexedArgumentValue(index, valueHolder);
 						}
 					} finally {
@@ -811,6 +820,7 @@ public class BeanDefinitionParserDelegate {
 					valueHolder.setName(nameAttr);
 				}
 				valueHolder.setSource(extractSource(ele));
+				// 添加到了 genericArgumentValues 里面
 				bd.getConstructorArgumentValues().addGenericArgumentValue(valueHolder);
 			} finally {
 				this.parseState.pop();
